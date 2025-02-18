@@ -77,11 +77,12 @@ class BasicBlock(nn.Module):
         x = self.relu(x)
 
         x = self.conv2(x)
-        x = self.bn1(x)
+        x = self.bn2(x)
 
         if self.downsample is not None:
             identity = self.downsample(identity)
         x += identity
+        x = self.relu(x)
 
         return x
 
@@ -150,9 +151,9 @@ def train_test_model(config : Config):
             T.Normalize(config.normalize_shape, config.normalize_shape),
         ])
     )
-    indices = random.sample(range(len(dataset)), 5000)
-    dataset = Subset(dataset, indices)
-    print(len(dataset))
+    # indices = random.sample(range(len(dataset)), 5000)
+    # dataset = Subset(dataset, indices)
+    # print(len(dataset))
     train_split = int(config.p_train_split * len(dataset))
     train, test = random_split(dataset, [train_split, len(dataset) - train_split])
     traindl = DataLoader(train, batch_size=config.batch_size, shuffle=True)
