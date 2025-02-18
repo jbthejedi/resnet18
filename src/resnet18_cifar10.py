@@ -167,7 +167,7 @@ def train_test_model(config : Config):
     traindl = DataLoader(train, batch_size=config.batch_size, shuffle=True)
     testdl = DataLoader(test, batch_size=config.batch_size, shuffle=False)
 
-    model = Resnet18(config, num_classes=10)
+    model = Resnet18(config, num_classes=10).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=config.lr)
     criterion = nn.CrossEntropyLoss()
     for epoch in range(1, config.n_epochs+1):
