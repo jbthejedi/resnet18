@@ -99,6 +99,48 @@ class LayerNorm(nn.Module):
 
         return x_hat
 
+class BatchNorm2d(nn.Module):
+    def __init__(
+        self,
+        num_features,
+        eps=1e-5,
+        momentum=0.1
+    ):
+        super().__init__()
+        self.num_features = num_features
+        self.eps = eps
+        self.momentum = momentum
+
+        self.gamma = nn.Parameter(torch.ones(num_features))
+        self.beta = nn.Parameter(torch.zeros(num_features))
+        
+        self.register_buffer('running_mean', torch.zeros(num_features))
+        self.register_buffer('running_var', torch.ones(num_features))
+
+    def forward(self, x):
+        # x.shape -> (b, c, h, w)
+        if self.training:
+            mean = x.mean(dim=[0, 2, 3])
+            var = x.var(dim=[0, 2, 3], unbiased=False) # unbiased=False -> N
+
+            with torch.no_grad():
+                m = self.momentum
+                self.running_mean.copy_((1 - m)*self.running_mean + m*mean)
+                self.running_var.copy_((1 - m)*self.running_var + m*var)
+        else:
+            mean = self.running_mean
+            var = self.running_var
+
+        eps = self.eps
+        x_hat = (x - mean[None,:,None,None]) / torch.sqrt(var[None,:,None,None] + eps)
+
+        # Apply the affine transformation
+        x_hat = x_hat*self.gamma[None,:,None,None] + self.beta[None,:,None,None]
+        
+        return x_hat
+
+
+
 
 def test_modules():
     # -----------

@@ -30,8 +30,6 @@ class Config:
     # num_channels : int = 3
     lr : float = 1e-3
 
-    do_small_sample : bool = False
-
 class BasicBlock(nn.Module):
     def __init__(
         self, in_channels, out_channels, stride
@@ -52,14 +50,14 @@ class BasicBlock(nn.Module):
             in_channels, out_channels,
             kernel_size=3, stride=stride, padding=1
         )
-        self.bn1 = nnm.BatchNorm2d(out_channels)
+        self.bn1 = nn.BatchNorm2d(out_channels)
         self.relu = nn.ReLU()
 
         self.conv2 = nnm.Conv2d(
             out_channels, out_channels,
             kernel_size=3, stride=1, padding=1
         )
-        self.bn2 = nnm.BatchNorm2d(out_channels)
+        self.bn2 = nn.BatchNorm2d(out_channels)
 
         if stride != 1 or in_channels != out_channels:
             self.downsample = nn.Sequential(
@@ -67,7 +65,7 @@ class BasicBlock(nn.Module):
                     in_channels, out_channels,
                     kernel_size=1, stride=stride, padding=0
                 ),
-                nnm.BatchNorm2d(out_channels)
+                nn.BatchNorm2d(out_channels)
             )
         else:
             self.downsample = None
@@ -107,7 +105,7 @@ class Resnet18(nn.Module):
             in_channels=config.num_channels, out_channels=64,
             kernel_size=7, stride=2, padding=3
         )
-        self.bn1 = nnm.BatchNorm2d(64)
+        self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU()
         self.maxpool = nnm.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
@@ -153,12 +151,9 @@ def train_test_model(config : Config):
             T.Normalize(config.normalize_shape, config.normalize_shape),
         ])
     )
-    
-    if config.do_small_sample:
-        indices = random.sample(range(len(dataset)), 5000)
-        dataset = Subset(dataset, indices)
-        print(len(dataset))
-
+    # indices = random.sample(range(len(dataset)), 5000)
+    # dataset = Subset(dataset, indices)
+    # print(len(dataset))
     train_split = int(config.p_train_split * len(dataset))
     train, test = random_split(dataset, [train_split, len(dataset) - train_split])
     traindl = DataLoader(train, batch_size=config.batch_size, shuffle=True)
