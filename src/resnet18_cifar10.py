@@ -24,13 +24,13 @@ class Config:
     image_size : int = 32
     n_epochs : int = 5
     p_train_split : float = 0.9
-    normalize_shape : tuple = (0.5,)
-    # normalize_shape : tuple = (0.5, 0.5, 0.5)
-    num_channels : int = 1
-    # num_channels : int = 3
+    # normalize_shape : tuple = (0.5,)
+    normalize_shape : tuple = (0.5, 0.5, 0.5)
+    # num_channels : int = 1
+    num_channels : int = 3
     lr : float = 1e-3
 
-    do_small_sample : bool = False
+    do_small_sample : bool = True
 
 class BasicBlock(nn.Module):
     def __init__(
@@ -145,10 +145,13 @@ class Resnet18(nn.Module):
 
 
 def train_test_model(config : Config):
-    dataset = (
+    dataset = CIFAR10(
         root="~/projects/vision-transformer/data",
         download=False,
         transform=T.Compose([
+            T.RandomCrop(config.image_size, padding=4),
+            T.RandomHorizontalFlip(),
+            T.RandomRotation(15),
             T.ToTensor(),
             T.Normalize(config.normalize_shape, config.normalize_shape),
         ])
